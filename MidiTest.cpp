@@ -1,5 +1,6 @@
 #include "MIDIE.h"
 #include "Algoritms.h"
+#include "MusicalScales.h"
 #include <time.h>
 
 MIDIE* midie = new MIDIE();
@@ -11,6 +12,9 @@ int main()
 {
 	std::cout << "Simple MIDI track using Collatz conj. and Primegaps." << std::endl;
 	std::cout << "-Cody Bloemhard." << std::endl;
+
+	Scales::HeptatonicScale test = Scales::Major(NOTE_D, 4);
+	std::cout << test.ToString() << std::endl;
 
 	//Collatz conjecture and Primegaps
 	int col_tone = 95, col_len = 500;
@@ -62,6 +66,7 @@ int main()
 	mix->AddTrack(track0, 1.0f);
 	mix->AddTrack(track1, 0.8f);
 	mix->AddTrack(track2, 1.0f);
+	mix->SetMasterVolume(0.0f);
 	mix->Play();
 
 	system("PAUSE");
