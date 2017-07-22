@@ -29,5 +29,11 @@
     <ClInclude Include="MusicalScales.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MarkovChain.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RandomChooser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

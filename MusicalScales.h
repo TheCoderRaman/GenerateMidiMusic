@@ -100,4 +100,17 @@ namespace Scales {
 		}
 		return s;
 	}
+	HeptatonicScale Minor(BYTE startingNote, char startingOctave) {
+		HeptatonicScale s;
+		BYTE note = startingNote;
+		char octave = startingOctave;
+		for (int i = 0; i < 7; i++) {
+			s.notes[i].letter = note;
+			s.notes[i].octave = octave;
+			s.notes[i].UpdateMidi();
+			s.midis[i] = s.notes[i].midiPitch;
+			ChromaticProgressionLetter(MINOR_PROGRESSION[i], note, octave);
+		}
+		return s;
+	}
 };

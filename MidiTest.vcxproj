@@ -148,8 +148,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Algoritms.h" />
+    <ClInclude Include="MarkovChain.h" />
     <ClInclude Include="MIDIE.h" />
     <ClInclude Include="MusicalScales.h" />
+    <ClInclude Include="RandomChooser.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
