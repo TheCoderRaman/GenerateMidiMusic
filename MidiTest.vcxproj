@@ -145,11 +145,24 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="MidiTest.cpp" />
+    <ClCompile Include="Midi\Binasc.cpp" />
+    <ClCompile Include="Midi\MidiEvent.cpp" />
+    <ClCompile Include="Midi\MidiEventList.cpp" />
+    <ClCompile Include="Midi\MidiFile.cpp" />
+    <ClCompile Include="Midi\MidiMessage.cpp" />
+    <ClCompile Include="Midi\Options.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Algoritms.h" />
     <ClInclude Include="MarkovChain.h" />
+    <ClInclude Include="MidiDataFilter.h" />
     <ClInclude Include="MIDIE.h" />
+    <ClInclude Include="Midi\Binasc.h" />
+    <ClInclude Include="Midi\MidiEventList.h" />
+    <ClInclude Include="Midi\MidiEvent.h" />
+    <ClInclude Include="Midi\MidiFile.h" />
+    <ClInclude Include="Midi\MidiMessage.h" />
+    <ClInclude Include="Midi\Options.h" />
     <ClInclude Include="MusicalScales.h" />
     <ClInclude Include="RandomChooser.h" />
   </ItemGroup>

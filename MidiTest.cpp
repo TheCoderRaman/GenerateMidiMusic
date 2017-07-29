@@ -3,70 +3,39 @@
 #include "MusicalScales.h"
 #include "MarkovChain.h"
 #include <time.h>
+#include <iomanip>
+#include <iostream>
+#include "MidiDataFilter.h"
+
+#include "Midi/MidiFile.h"
+#include "Midi/Options.h"
 
 MIDIE* midie = new MIDIE();
 NoteTrack* track0 = new NoteTrack(0, 0);
-NoteTrack* track1 = new NoteTrack(CHL_DRUM, 0);
-NoteTrack* track2 = new NoteTrack(1, INSTR_FRETLESS);
 
-int main()
+using namespace std;
+int main(int argc, char** argv)
 {
-	std::cout << "Simple MIDI track using Collatz conj. and Primegaps." << std::endl;
+	std::cout << "Simple MIDI track by learned markovchain." << std::endl;
 	std::cout << "-Cody Bloemhard." << std::endl;
+	//https://github.com/craigsapp/midifile
+	
+	MidiFile midifile;
+	midifile.read("test.mid");
+	
+	int tracks = midifile.getTrackCount();
+	std::vector<Note>* notes = new std::vector<Note>[tracks];
 
-	Scales::HeptatonicScale Dmajor = Scales::Major(NOTE_D, 4);
-	Scales::HeptatonicScale Dminor = Scales::Major(NOTE_D, 4);
-	int pos = 0;
-
-	RandomChooser chooser;
-	int results[10] = {0,0,0,0,0,0,0,0,0,0};
-	chooser.AddChance(0.10);
-	chooser.AddChance(0.10);
-	chooser.AddChance(0.10);
-	chooser.AddChance(0.10);
-	chooser.AddChance(0.10);
-	chooser.AddChance(0.10);
-	chooser.AddChance(0.10);
-	chooser.AddChance(0.10);
-	chooser.AddChance(0.10);
-	chooser.AddChance(0.10);
-	for (int i = 0; i < 1000000; i++) {
-		results[chooser.Choose()]++;
-	}
-	for (int i = 0; i < 10; i++) {
-		std::cout << "["<< i << "]: " << (float)results[i] / (float)1000000 << std::endl;
+	for (int track = 0; track < tracks; track++) {
+		cout << "Track " << track << endl;
+		notes[track] = FilterNotes_ON_AUDIBLE(midifile, track);
 	}
 
-	MarkovChain chain;
-	chain.AddNode('A');
-	chain.AddNode('B');
-	chain.AddLink('A', 'A', 0.7f);
-	chain.AddLink('A', 'B', 0.3f);
-	chain.AddLink('B', 'B', 0.5f);
-	chain.AddLink('B', 'A', 0.5f);
-	chain.InitChain();
-	for (int i = 0; i < 100; i++){
-		char prev = chain.GetState();
-		chain.AdvanceState();
-		if (chain.GetState() != prev) {
-			pos = 0;
-		}
-		if (chain.GetState() == 'A') {
-			track0->AddLineRelative(250, Note(Dmajor.midis[pos], 100));
-			pos++;
-		}
-		else {
-			track0->AddLineRelative(250, Note(Dminor.midis[pos], 100));
-			pos++;
-		}
+	std::vector<Note>::iterator it;
+	for (it = notes[5].begin(); it != notes[5].end(); ++it) {
+		std::cout << "[" << (int)it->hz << " , " << (int)it->db << "]\n";
 	}
 
-	Mix* mix = new Mix(midie);
-	mix->AddTrack(track0, 1.0f);
-	mix->AddTrack(track1, 0.8f);
-	mix->AddTrack(track2, 1.0f);
-	mix->SetMasterVolume(1.0f);
-	mix->Play();
 	system("PAUSE");
     return 0;
 }
