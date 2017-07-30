@@ -1,75 +1,112 @@
 #pragma once
 #include <vector>
 #include "RandomChooser.h"
-
-class MarkovNode {
-private:
-	std::vector<MarkovNode*> links;
-	RandomChooser chooser;
-	float max = 0.0f;
-public:
-	const char state;
-	MarkovNode(char state) : state(state){
-		
-	}
-	void AddLink(MarkovNode* node, float change) {
-		links.push_back(node);
-		chooser.AddChance(change);
-		max += change;
-	}
-	MarkovNode* NextNode() {
-		return links[chooser.Choose()];
-	}
-};
-
-class MarkovChain {
-private:
-	char state;
-	MarkovNode* currentNode;
-	std::vector<MarkovNode> nodes;
-public:
-	MarkovChain() {
-		state = 0;
-		currentNode = NULL;
-		srand(time(NULL));
-	}
-	char GetState() {
-		return state;
-	}
-	char AdvanceState() {
-		currentNode = currentNode->NextNode();
-		state = currentNode->state;
-		return state;
-	}
-	MarkovNode* GetNode(char itsstate) {
-		std::vector<MarkovNode>::iterator it;
-		for (it = nodes.begin(); it != nodes.end(); ++it) {
-			if ((*it).state == itsstate)
-				return &(*it);
+namespace algo {
+	template<typename T>
+	class MarkovChain {
+	private:
+		const int size;
+		T* states;
+		T state;
+		util::RandomChooserFixed* chooser;
+		float** matrix;
+		int* entries;
+		int _findIndexOfState(T s) {
+			for (int i = 0; i < size; i++) {
+				if (states[i] == s)
+					return i;
+			}
+			return 0;
 		}
-		return NULL;
-	}
-	void InitChain() {
-		currentNode = &nodes[0];
-	}
-	void InitChain(char itsstate) {
-		currentNode = GetNode(itsstate);
-	}
-	void AddNode(char itsstate) {
-		nodes.push_back(MarkovNode(itsstate));
-	}
-	void AddLink(char fromstate, char tostate, float change) {
-		MarkovNode* fromnode = GetNode(fromstate);
-		MarkovNode* tonode = GetNode(tostate);
-		if (fromnode != NULL && fromnode != NULL) {
-			fromnode->AddLink(tonode, change);
+		void _learnData(std::vector<T> data) {
+			if (data.size() == 0) 
+				return;
+			T prev = data[0];
+			state = data[0];
+			typename std::vector<T>::iterator it;
+			for (it = (++data.begin()); it != data.end(); ++it) {
+				int prevI = _findIndexOfState(prev);
+				int currI = _findIndexOfState(*it);
+				matrix[prevI][currI]++;
+				entries[prevI]++;
+				prev = (*it);
+			}
 		}
-	}
-	void AddLinkToAll(char fromstate, float change) {
-		MarkovNode* fromnode = GetNode(fromstate);
-		std::vector<MarkovNode>::iterator it;
-		for (it = nodes.begin(); it != nodes.end(); ++it) {
-			fromnode->AddLink(&(*it), change);
+		void _finishLearning() {
+			for (int i = 0; i < size; i++)
+				for (int j = 0; j < size; j++) {
+					if (entries[i] == 0) continue;
+					matrix[i][j] /= (float)entries[i];
+				}
 		}
-	}
+	public:
+		MarkovChain(int size) : size(size) {
+			states = new T[size];
+			for (int i = 0; i < size; i++)
+				states[i] = 0;
+			matrix = new float*[size];
+			for (int i = 0; i < size; i++)
+				matrix[i] = new float[size];
+			for (int i = 0; i < size; i++)
+				for (int j = 0; j < size; j++)
+					matrix[i][j] = 0;
+			entries = new int[size];
+			memset(entries, 0, sizeof(int) * size);
+			chooser = new util::RandomChooserFixed(size);
+		}
+		~MarkovChain() {
+			delete[] states;
+			for (int i = 0; i < size; i++)
+				delete[] matrix[i];
+			delete[] matrix;
+			delete[] entries;
+		}
+		void SetMatrix(float** ptr, int size) {
+			for (int i = 0; i < size; i++)
+				for (int j = 0; j < size; j++) {
+					matrix[i][j] = ptr[i][j];
+				}
+		}
+		void LearnData(std::vector<T>& data) {
+			_learnData(data);
+			_finishLearning();
+		}
+		void LearnData(std::vector<T>* data, int len) {
+			for (int i = 0; i < len; i++) {
+				_learnData(data[i]);
+			}
+			_finishLearning();
+		}
+		void SetStateObject(int index, T newstate) {
+			states[index] = newstate;
+		}
+		void SetState(T cstate) {
+			state = cstate;
+		}
+		T GetState() {
+			return state;
+		}
+		T SimulateNextWeighted() {
+			int s = _findIndexOfState(state);
+			chooser->SetChances(matrix[s]);
+			int r = chooser->Choose();
+			state = states[r];
+			return state;
+		}
+		T SimulateNextUnweighted() {
+			int s = _findIndexOfState(state);
+			chooser->SetChances(matrix[s]);
+			int r = chooser->ChooseUnweighted();
+			state = states[r];
+			return state;
+		}
+		void print() {
+			for (int i = 0; i < size; i++) {
+				for (int j = 0; j < size; j++) {
+					cout << matrix[i][j] << " , ";
+				}
+				cout << endl;
+			}
+		}
+	};
 };
