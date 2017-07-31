@@ -33,12 +33,17 @@ int main(int argc, char** argv)
 	std::vector<short>* intervals = new std::vector<short>[tracks];
 
 	for (int track = 0; track < tracks; track++) {
-		FilterPitch_ON_AUDIBLE(pitches[track], midifile, track);
-		FilterVolume_ON_AUDIBLE(volumes[track], midifile, track);
-		FilterInterval_ON_AUDIBLE(intervals[track], midifile, track);
+		FilterPitch_ON(pitches[track], midifile, track);
+		FilterVolume_ON(volumes[track], midifile, track);
+		FilterInterval_ON(intervals[track], midifile, track);
 		FilterRange(intervals[track], (short)10, (short)1000);
 	}
 	cout << "[ALL TRACKS LOADED]" << endl;
+
+	/*std::vector<short>::iterator it;
+	for (it = intervals[1].begin(); it != intervals[1].end(); ++it) {
+		cout << *it << " , ";
+	}*/
 
 	algo::MarkovChain<BYTE> pitchChain(128);
 	for (int i = 0; i < 128; i++)
@@ -50,8 +55,8 @@ int main(int argc, char** argv)
 		volumeChain.SetStateObject(i, i);
 	volumeChain.LearnData(volumes, tracks);
 
-	algo::MarkovChain<short> intervalChain(128);
-	for (int i = 0; i < 128; i++)
+	algo::MarkovChain<short> intervalChain(1000);
+	for (int i = 0; i < 1000; i++)
 		intervalChain.SetStateObject(i, i);
 	intervalChain.LearnData(intervals, tracks);
 	cout << "[MUSIC LEARNED]" << endl;
@@ -61,8 +66,11 @@ int main(int argc, char** argv)
 		BYTE p = pitchChain.SimulateNextWeighted();
 		BYTE v = volumeChain.SimulateNextWeighted();
 		short i = intervalChain.SimulateNextWeighted();
-		track0->AddLineRelative((float)i/(float)tpq*millisPerQuarter, Note(p, v));
+		int notelen = (float)i / (float)tpq*millisPerQuarter;
+		track0->AddLineRelative(notelen, Note(p, v));
+		cout << i << " , ";
 	}
+
 	midie->PlayNoteTrack(track0);
 	system("PAUSE");
     return 0;
