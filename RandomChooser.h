@@ -10,7 +10,7 @@ namespace util {
 		RandomChooser() {
 			srand(time(NULL));
 		}
-		int uniformRand(int min, int max) {
+		static int uniformRand(int min, int max) {
 			return ((double)rand() / ((double)RAND_MAX + 1.0)) * (max - min + 1) + min;
 		}
 		int Choose() {
@@ -40,7 +40,7 @@ namespace util {
 			chances = new float[size];
 			this->size = size;
 		}
-		int uniformRand(int min, int max) {
+		static int uniformRand(int min, int max) {
 			return ((double)rand() / ((double)RAND_MAX + 1.0)) * (max - min + 1) + min;
 		}
 		int Choose() {

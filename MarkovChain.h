@@ -67,13 +67,22 @@ namespace algo {
 					matrix[i][j] = ptr[i][j];
 				}
 		}
-		void LearnData(std::vector<T>& data) {
+		void LearnDataSequence(std::vector<T>& data) {
 			_learnData(data);
 			_finishLearning();
 		}
-		void LearnData(std::vector<T>* data, int len) {
+		void LearnDataSequence(std::vector<T>* data, int len) {
 			for (int i = 0; i < len; i++) {
 				_learnData(data[i]);
+			}
+			_finishLearning();
+		}
+		void LearnDataDuos(std::vector<T*>& data, int srcIndex, int dstIndex) {
+			for (int i = 0; i < data.size(); i++) {
+				int srcI = _findIndexOfState(data[i][srcIndex]);
+				int dstI = _findIndexOfState(data[i][dstIndex]);
+				matrix[srcI][dstI]++;
+				entries[srcI]++;
 			}
 			_finishLearning();
 		}
@@ -106,6 +115,11 @@ namespace algo {
 					cout << matrix[i][j] << " , ";
 				}
 				cout << endl;
+			}
+		}
+		void printLinks() {
+			for (int i = 0; i < size; i++) {
+				cout << i << " :: " << (int)states[i] << endl;
 			}
 		}
 	};
