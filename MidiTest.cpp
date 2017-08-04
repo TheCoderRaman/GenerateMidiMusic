@@ -20,7 +20,7 @@ int main(int argc, char** argv)
 	std::cout << "Simple MIDI track by learned markovchain." << std::endl;
 	std::cout << "-Cody Bloemhard." << std::endl;
 	//https://github.com/craigsapp/midifile
-	
+
 	MidiFile midifile;
 	midifile.read("beethoven_5e.mid");
 	short tpq = midifile.getTicksPerQuarterNote();
@@ -34,6 +34,7 @@ int main(int argc, char** argv)
 	std::vector<short>* intervals = new std::vector<short>[tracks];
 	std::vector<BYTE*> chords;
 	std::vector<BYTE> uniqChords;
+	std::vector<BYTE> chordDegrees;
 
 	for (int track = 0; track < tracks; track++) {
 		FilterPitch_ON(pitches[track], midifile, track);
@@ -42,16 +43,17 @@ int main(int argc, char** argv)
 		FilterRange(intervals[track], (short)10, (short)1000);
 	}
 	FilterChords_ON(chords, 3, midifile);
+	CountChordDegrees(chordDegrees, midifile);
+	int uniqChordDegrees = CountUniqueValues(chordDegrees);
 	cout << "[ALL TRACKS LOADED]!" << endl;
 
-	/*std::vector<BYTE*>::iterator it;
-	for (it = chords.begin(); it != chords.end(); ++it) {
-		cout << (int)(*it)[0] << "," << (int)(*it)[1] << "," << (int)(*it)[2] << endl;
-	}*/
+	std::vector<BYTE>::iterator it;
+	for (it = chordDegrees.begin(); it != chordDegrees.end(); ++it) {
+		cout << (int)*it << " , ";
+	}
+
 	cout << (nChords = chords.size()) << endl;
 	cout << (uniqStartingChords = FilterCountChordsWithUniqueStart(chords, uniqChords)) << endl;
-	/*for (int i = 0; i < uniqStartingChords; i++)
-		cout << (int)uniqChords[i] << " :: ";*/
 
 	algo::MarkovChain<BYTE> pitchChain(128);
 	for (int i = 0; i < 128; i++)

@@ -17,6 +17,29 @@ void FilterRange(std::vector<T>& vec, T min, T max) {
 	vec = newvec;
 }
 
+template <typename T>
+int CountUniqueValues(std::vector<T>& vec) {
+	int c = 0;
+	T* counter = new T[vec.size()];
+	typename std::vector<T>::iterator it;
+	for (it = vec.begin(); it != vec.end(); ++it) {
+		bool newv = true;
+		for (int i = 0; i < c; i++) {
+			if (*it == counter[i]) {
+				newv = false;
+				break;
+			}
+		}
+		if (newv) {
+			counter[c] = *it;
+			c++;
+		}
+	}
+
+	delete[] counter;
+	return c;
+}
+
 void FilterNotes_ON(std::vector<Note>& vec, MidiFile file, int track) {
 	for (int event = 0; event < file[track].size(); event++) {
 		unsigned char cmd = file[track][event][0];
@@ -147,4 +170,34 @@ int FindThirdNoteInChord(const std::vector<BYTE*>& vec, int fn, int sn) {
 		if (r < i)
 			return index + i;
 	}
+}
+
+int* CountChordDegrees(std::vector<BYTE>& vec, MidiFile file) {
+	int* degrees = new int[4]{0};
+	short prev = 0;
+	int c = 0;
+	std::vector<MidiEvent> allevents;
+	for (int i = 0; i < file.getTrackCount(); i++) {
+		for (int j = 0; j < file[i].size(); j++) {
+			MidiEvent e = file[i][j];
+			unsigned char cmd = e[0];
+			if (!(cmd >= 0x90 && cmd <= 0x90 + 16)) continue;
+			if (e[1] == 0 || e[2] == 0) continue;
+			allevents.push_back(e);
+		}
+	}
+	sort(allevents.begin(), allevents.end(), SortMidiEventByTick);
+	for (int i = 0; i < allevents.size(); i++) {
+		MidiEvent e = allevents[i];
+		short delta = e.tick - prev;
+		if (delta == 0) {
+			c++;//:D
+		}
+		else {
+			vec.push_back(c);
+			c = 0;
+		}
+		prev = e.tick;
+	}
+	return degrees;
 }
