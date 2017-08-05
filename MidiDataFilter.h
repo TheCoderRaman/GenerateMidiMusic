@@ -40,6 +40,30 @@ int CountUniqueValues(std::vector<T>& vec) {
 	return c;
 }
 
+template <typename T>
+int FilterCountUniqueValues(std::vector<T>& data, std::vector<T>& vec) {
+	int c = 0;
+	T* counter = new T[data.size()];
+	typename std::vector<T>::iterator it;
+	for (it = data.begin(); it != data.end(); ++it) {
+		bool newv = true;
+		for (int i = 0; i < c; i++) {
+			if (*it == counter[i]) {
+				newv = false;
+				break;
+			}
+		}
+		if (newv) {
+			counter[c] = *it;
+			vec.push_back(*it);
+			c++;
+		}
+	}
+
+	delete[] counter;
+	return c;
+}
+
 void FilterNotes_ON(std::vector<Note>& vec, MidiFile file, int track) {
 	for (int event = 0; event < file[track].size(); event++) {
 		unsigned char cmd = file[track][event][0];

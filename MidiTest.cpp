@@ -35,6 +35,7 @@ int main(int argc, char** argv)
 	std::vector<BYTE*> chords;
 	std::vector<BYTE> uniqChords;
 	std::vector<BYTE> chordDegrees;
+	std::vector<BYTE> uniqDegrees;
 
 	for (int track = 0; track < tracks; track++) {
 		FilterPitch_ON(pitches[track], midifile, track);
@@ -44,16 +45,11 @@ int main(int argc, char** argv)
 	}
 	FilterChords_ON(chords, 3, midifile);
 	CountChordDegrees(chordDegrees, midifile);
-	int uniqChordDegrees = CountUniqueValues(chordDegrees);
+	int uniqChordDegrees = FilterCountUniqueValues(chordDegrees, uniqDegrees);
 	cout << "[ALL TRACKS LOADED]!" << endl;
 
-	std::vector<BYTE>::iterator it;
-	for (it = chordDegrees.begin(); it != chordDegrees.end(); ++it) {
-		cout << (int)*it << " , ";
-	}
-
-	cout << (nChords = chords.size()) << endl;
-	cout << (uniqStartingChords = FilterCountChordsWithUniqueStart(chords, uniqChords)) << endl;
+	nChords = chords.size();
+	uniqStartingChords = FilterCountChordsWithUniqueStart(chords, uniqChords);
 
 	algo::MarkovChain<BYTE> pitchChain(128);
 	for (int i = 0; i < 128; i++)
@@ -74,21 +70,28 @@ int main(int argc, char** argv)
 	for (int i = 0; i < uniqStartingChords; i++)
 		chordChain.SetStateObject(i, uniqChords[i]);
 	chordChain.LearnDataDuos(chords, 0, 1);
+
+	algo::MarkovChain<BYTE> degreeChain(uniqChordDegrees);
+	for (int i = 0; i < uniqChordDegrees; i++)
+		degreeChain.SetStateObject(i, uniqDegrees[i]);
+	degreeChain.LearnDataSequence(chordDegrees);
 	cout << "[MUSIC LEARNED]" << endl;
 
 	const int musiclen = 1000;
 	for (int x = 0; x < musiclen; x++) {
 		BYTE p = pitchChain.SimulateNextWeighted();
 		BYTE v = volumeChain.SimulateNextWeighted();
+		BYTE d = degreeChain.SimulateNextWeighted();
 		chordChain.SetState(p);
 		BYTE c0 = chordChain.SimulateNextWeighted();
 		BYTE c1 = FindThirdNoteInChord(chords, p, c0);
 		short i = intervalChain.SimulateNextWeighted();
 		int notelen = (float)i / (float)tpq*millisPerQuarter;
-		
+
 		track0->AddLineRelative(notelen, Note(p, v));
-		if (c0 != 0) track0->AddLineRelative(0, Note(c0, v));
-		if (c1 != 0) track0->AddLineRelative(0, Note(c1, v));
+		if (c0 != 0 && d >= 1) track0->AddLineRelative(0, Note(c0, v));
+		if (c1 != 0 && d >= 2) track0->AddLineRelative(0, Note(c1, v));
+		cout << (int)d << ", ";
 	}
 
 	midie->PlayNoteTrack(track0);
