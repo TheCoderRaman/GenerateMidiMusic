@@ -18,11 +18,12 @@ using namespace std;
 int main(int argc, char** argv)
 {
 	std::cout << "Simple MIDI track by learned markovchain." << std::endl;
+	std::cout << "Have a file called loadthismidi.mid in this directory." << std::endl;
 	std::cout << "-Cody Bloemhard." << std::endl;
 	//https://github.com/craigsapp/midifile
 
 	MidiFile midifile;
-	midifile.read("beethoven_5e.mid");
+	midifile.read("loadthismidi.mid");
 	short tpq = midifile.getTicksPerQuarterNote();
 	short millisPerQuarter = 500;
 	cout << "TPQ: " << tpq << endl;
