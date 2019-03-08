@@ -26,13 +26,13 @@
 #define BYTE unsigned char
 #define ULONG unsigned long
 #define MESSAGE union { ULONG w; BYTE d[4]; }
-
+//pitch and amplitude go from 0 to 128, so {0,1 ... 126,127}
 struct Note {
-	BYTE hz, db;
+	BYTE pitch, amplitude;
 	Note() {}
-	Note(BYTE hz, BYTE db) {
-		this->hz = hz;
-		this->db = db;
+	Note(BYTE pitch, BYTE ampli) {
+		this->pitch = pitch;
+		this->amplitude = ampli;
 	}
 };
 
@@ -67,11 +67,11 @@ public:
 		track.push_back(l);
 		time = l.t;
 	}
-	void Addline(short t, Note n) {
+	void AddLine(short t, Note n) {
 		track.push_back(Line(t, n));
 		time = t;
 	}
-	void Addline(short t, BYTE hz, BYTE db) {
+	void AddLine(short t, BYTE hz, BYTE db) {
 		track.push_back(Line(t, hz, db));
 		time = t;
 	}
@@ -137,8 +137,8 @@ public:
 	}
 	void PlayNote(Note n) {
 		m.d[MD] = MSG_NOTE_ON | channel;
-		m.d[HZ] = n.hz;
-		m.d[DB] = n.db * mv;
+		m.d[HZ] = n.pitch;
+		m.d[DB] = n.amplitude * mv;
 		flag = midiOutShortMsg(device, m.w);
 	}
 	void PlayNoteBlocked(BYTE hz, BYTE db, short t) {
@@ -150,8 +150,8 @@ public:
 	}
 	void PlayNoteBlocked(Note n, short t) {
 		m.d[MD] = MSG_NOTE_ON | channel;
-		m.d[HZ] = n.hz;
-		m.d[DB] = n.db * mv;
+		m.d[HZ] = n.pitch;
+		m.d[DB] = n.amplitude * mv;
 		flag = midiOutShortMsg(device, m.w);
 		Sleep(t);
 	}
@@ -168,12 +168,12 @@ public:
 	}
 	void PlayNoteAutoBlocked(Note n, short t) {
 		m.d[MD] = MSG_NOTE_ON | channel;
-		m.d[HZ] = n.hz;
-		m.d[DB] = n.db * mv;
+		m.d[HZ] = n.pitch;
+		m.d[DB] = n.amplitude * mv;
 		flag = midiOutShortMsg(device, m.w);
 		Sleep(t);
 		m.d[MD] = MSG_NOTE_OFF | channel;
-		m.d[HZ] = n.hz;
+		m.d[HZ] = n.pitch;
 		m.d[DB] = 0;
 		flag = midiOutShortMsg(device, m.w);
 	}
@@ -199,8 +199,8 @@ public:
 			Sleep(timer);
 			time += timer;
 			m.d[MD] = modeToUse;
-			m.d[HZ] = it->n.hz;
-			m.d[DB] = it->n.db * t->GetVolume() * mv;
+			m.d[HZ] = it->n.pitch;
+			m.d[DB] = it->n.amplitude * t->GetVolume() * mv;
 			flag = midiOutShortMsg(device, m.w);
 		}
 	}

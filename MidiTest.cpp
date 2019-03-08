@@ -14,13 +14,19 @@
 MIDIE* midie = new MIDIE();
 NoteTrack* track0 = new NoteTrack(0, 0);
 
+void TestMidiEngine();
+
 using namespace std;
 int main(int argc, char** argv)
 {
 	std::cout << "Simple MIDI track by learned markovchain." << std::endl;
 	std::cout << "Have a file called loadthismidi.mid in this directory." << std::endl;
 	std::cout << "-Cody Bloemhard." << std::endl;
+	//midi file loading stuff source:
 	//https://github.com/craigsapp/midifile
+
+	//uncomment to see basic functionality of MIDIE
+	TestMidiEngine();
 
 	MidiFile midifile;
 	midifile.read("loadthismidi.mid");
@@ -98,4 +104,38 @@ int main(int argc, char** argv)
 	midie->PlayNoteTrack(track0);
 	system("PAUSE");
     return 0;
+}
+
+void TestMidiEngine() {
+	NoteTrack* tr0 = new NoteTrack(0, 0);
+	//Note(pitch, amplitude)
+	//pitch and amplitude go from 0 to 128, so {0,1 ... 126,127}
+	//add notes with absulute time(ms),
+	tr0->AddLine(0, Note(25, 100));
+	tr0->AddLine(250, Note(50, 100));
+	tr0->AddLine(750, Note(75, 100));
+	tr0->AddLine(1000, Note(127, 127));
+	//add notes with relative time
+	tr0->AddLineRelative(250, Note(30, 100));
+	tr0->AddLineRelative(250, Note(35, 100));
+	tr0->AddLineRelative(250, Note(40, 100));
+	tr0->AddLineRelative(250, Note(45, 100));
+	tr0->AddLineRelative(250, Note(50, 100));
+	tr0->AddLineRelative(250, Note(55, 100));
+	tr0->AddLineRelative(250, Note(60, 100));
+	//play track
+	midie->PlayNoteTrack(tr0);
+	//multiple tracks
+	NoteTrack* tr1 = new NoteTrack(0, INSTR_PIANO);
+	NoteTrack* tr2 = new NoteTrack(1, INSTR_FRETLESS);
+	for (int i = 0; i < 100; i++)
+		tr1->AddLineRelative(200, Note(60 + (i % 10) * 5, 100));
+	for (int i = 0; i < 100; i++)
+		tr2->AddLineRelative(200, Note(40 + (i % 5) * 5, 100));
+	Mix* mix = new Mix(midie);
+	mix->AddTrack(tr1, 0.8f);
+	mix->AddTrack(tr2, 1.0f);
+	mix->Play();
+	delete mix;
+	delete tr0, tr1, tr2;
 }
